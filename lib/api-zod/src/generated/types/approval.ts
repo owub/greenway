@@ -8,7 +8,7 @@
 import type { ApprovalStatus } from './approvalStatus';
 
 export interface Approval {
-  id: number;
+  id: string;
   sessionId: string;
   /** @nullable */
   faceImageData?: string | null;

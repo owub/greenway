@@ -568,7 +568,7 @@ export function useGetVideoStats<TData = Awaited<ReturnType<typeof getVideoStats
 
 
 
-export const getGetVideoUrl = (id: number,) => {
+export const getGetVideoUrl = (id: string,) => {
 
 
 
@@ -579,7 +579,7 @@ export const getGetVideoUrl = (id: number,) => {
 /**
  * @summary Get a single video
  */
-export const getVideo = async (id: number, options?: RequestInit): Promise<Video> => {
+export const getVideo = async (id: string, options?: RequestInit): Promise<Video> => {
 
   return customFetch<Video>(getGetVideoUrl(id),
   {
@@ -594,14 +594,14 @@ export const getVideo = async (id: number, options?: RequestInit): Promise<Video
 
 
 
-export const getGetVideoQueryKey = (id: number,) => {
+export const getGetVideoQueryKey = (id: string,) => {
     return [
     `/api/videos/${id}`
     ] as const;
     }
 
 
-export const getGetVideoQueryOptions = <TData = Awaited<ReturnType<typeof getVideo>>, TError = ErrorType<void>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getVideo>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const getGetVideoQueryOptions = <TData = Awaited<ReturnType<typeof getVideo>>, TError = ErrorType<void>>(id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getVideo>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -628,7 +628,7 @@ export type GetVideoQueryError = ErrorType<void>
  */
 
 export function useGetVideo<TData = Awaited<ReturnType<typeof getVideo>>, TError = ErrorType<void>>(
- id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getVideo>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+ id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getVideo>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -645,7 +645,7 @@ export function useGetVideo<TData = Awaited<ReturnType<typeof getVideo>>, TError
 
 
 
-export const getDeleteVideoUrl = (id: number,) => {
+export const getDeleteVideoUrl = (id: string,) => {
 
 
 
@@ -656,7 +656,7 @@ export const getDeleteVideoUrl = (id: number,) => {
 /**
  * @summary Delete a video
  */
-export const deleteVideo = async (id: number, options?: RequestInit): Promise<void> => {
+export const deleteVideo = async (id: string, options?: RequestInit): Promise<void> => {
 
   return customFetch<void>(getDeleteVideoUrl(id),
   {
@@ -671,8 +671,8 @@ export const deleteVideo = async (id: number, options?: RequestInit): Promise<vo
 
 
 export const getDeleteVideoMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteVideo>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof deleteVideo>>, TError,{id: number}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteVideo>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteVideo>>, TError,{id: string}, TContext> => {
 
 const mutationKey = ['deleteVideo'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
@@ -684,7 +684,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteVideo>>, {id: number}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteVideo>>, {id: string}> = (props) => {
           const {id} = props ?? {};
 
           return  deleteVideo(id,requestOptions)
@@ -705,11 +705,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
  * @summary Delete a video
  */
 export const useDeleteVideo = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteVideo>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteVideo>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof deleteVideo>>,
         TError,
-        {id: number},
+        {id: string},
         TContext
       > => {
       return useMutation(getDeleteVideoMutationOptions(options));

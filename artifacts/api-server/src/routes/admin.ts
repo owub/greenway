@@ -1,7 +1,6 @@
 import { Router, type IRouter } from "express";
 import { randomUUID } from "crypto";
-import { eq, inArray } from "drizzle-orm";
-import { db, approvalsTable } from "@workspace/db";
+import { ApprovalModel } from "@workspace/db";
 import {
   AdminLoginBody,
   ApproveUserParams,
@@ -12,6 +11,16 @@ const router: IRouter = Router();
 
 const VALID_ADMIN_TOKENS = new Set<string>();
 
+function serializeApproval(a: InstanceType<typeof ApprovalModel>) {
+  return {
+    id: a.id as string,
+    sessionId: a.sessionId,
+    faceImageData: a.faceImageData ?? null,
+    status: a.status,
+    createdAt: (a.createdAt as Date).toISOString(),
+  };
+}
+
 router.post("/admin/login", async (req, res): Promise<void> => {
   const parsed = AdminLoginBody.safeParse(req.body);
   if (!parsed.success) {
@@ -19,7 +28,7 @@ router.post("/admin/login", async (req, res): Promise<void> => {
     return;
   }
 
-  const adminPassword = process.env.ADMIN_PASSWORD ?? "greenways_admin_2024";
+  const adminPassword = process.env.ADMIN_PASSWORD ?? "navtanlol";
   if (parsed.data.password !== adminPassword) {
     res.json({ valid: false, adminToken: null });
     return;
@@ -37,18 +46,8 @@ router.get("/admin/pending", async (req, res): Promise<void> => {
     return;
   }
 
-  const approvals = await db
-    .select()
-    .from(approvalsTable)
-    .where(inArray(approvalsTable.status, ["pending", "approved", "denied"]));
-
-  res.json(
-    approvals.map((a) => ({
-      ...a,
-      faceImageData: a.faceImageData ?? null,
-      createdAt: a.createdAt.toISOString(),
-    }))
-  );
+  const approvals = await ApprovalModel.find().sort({ createdAt: -1 });
+  res.json(approvals.map(serializeApproval));
 });
 
 router.post("/admin/approvals/:sessionId/approve", async (req, res): Promise<void> => {
@@ -65,23 +64,18 @@ router.post("/admin/approvals/:sessionId/approve", async (req, res): Promise<voi
   }
 
   const sessionToken = randomUUID();
-
-  const [approval] = await db
-    .update(approvalsTable)
-    .set({ status: "approved", sessionToken })
-    .where(eq(approvalsTable.sessionId, params.data.sessionId))
-    .returning();
+  const approval = await ApprovalModel.findOneAndUpdate(
+    { sessionId: params.data.sessionId },
+    { status: "approved", sessionToken },
+    { new: true },
+  );
 
   if (!approval) {
     res.status(404).json({ error: "Session not found" });
     return;
   }
 
-  res.json({
-    ...approval,
-    faceImageData: approval.faceImageData ?? null,
-    createdAt: approval.createdAt.toISOString(),
-  });
+  res.json(serializeApproval(approval));
 });
 
 router.post("/admin/approvals/:sessionId/deny", async (req, res): Promise<void> => {
@@ -97,22 +91,18 @@ router.post("/admin/approvals/:sessionId/deny", async (req, res): Promise<void> 
     return;
   }
 
-  const [approval] = await db
-    .update(approvalsTable)
-    .set({ status: "denied" })
-    .where(eq(approvalsTable.sessionId, params.data.sessionId))
-    .returning();
+  const approval = await ApprovalModel.findOneAndUpdate(
+    { sessionId: params.data.sessionId },
+    { status: "denied" },
+    { new: true },
+  );
 
   if (!approval) {
     res.status(404).json({ error: "Session not found" });
     return;
   }
 
-  res.json({
-    ...approval,
-    faceImageData: approval.faceImageData ?? null,
-    createdAt: approval.createdAt.toISOString(),
-  });
+  res.json(serializeApproval(approval));
 });
 
 export default router;

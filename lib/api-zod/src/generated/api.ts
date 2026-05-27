@@ -54,7 +54,7 @@ export const GetAuthStatusResponse = zod.object({
  * @summary List all videos
  */
 export const ListVideosResponseItem = zod.object({
-  "id": zod.number(),
+  "id": zod.string(),
   "title": zod.string(),
   "description": zod.string().nullish(),
   "filename": zod.string(),
@@ -87,11 +87,11 @@ export const GetVideoStatsResponse = zod.object({
  * @summary Get a single video
  */
 export const GetVideoParams = zod.object({
-  "id": zod.coerce.number()
+  "id": zod.coerce.string()
 })
 
 export const GetVideoResponse = zod.object({
-  "id": zod.number(),
+  "id": zod.string(),
   "title": zod.string(),
   "description": zod.string().nullish(),
   "filename": zod.string(),
@@ -104,7 +104,7 @@ export const GetVideoResponse = zod.object({
  * @summary Delete a video
  */
 export const DeleteVideoParams = zod.object({
-  "id": zod.coerce.number()
+  "id": zod.coerce.string()
 })
 
 
@@ -129,7 +129,7 @@ export const ListPendingApprovalsQueryParams = zod.object({
 })
 
 export const ListPendingApprovalsResponseItem = zod.object({
-  "id": zod.number(),
+  "id": zod.string(),
   "sessionId": zod.string(),
   "faceImageData": zod.string().nullish(),
   "status": zod.enum(['pending', 'approved', 'denied']),
@@ -146,7 +146,7 @@ export const ApproveUserParams = zod.object({
 })
 
 export const ApproveUserResponse = zod.object({
-  "id": zod.number(),
+  "id": zod.string(),
   "sessionId": zod.string(),
   "faceImageData": zod.string().nullish(),
   "status": zod.enum(['pending', 'approved', 'denied']),
@@ -162,7 +162,7 @@ export const DenyUserParams = zod.object({
 })
 
 export const DenyUserResponse = zod.object({
-  "id": zod.number(),
+  "id": zod.string(),
   "sessionId": zod.string(),
   "faceImageData": zod.string().nullish(),
   "status": zod.enum(['pending', 'approved', 'denied']),

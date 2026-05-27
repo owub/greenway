@@ -1,6 +1,6 @@
 # Deploying Greenways on Render.com
 
-This guide walks you through deploying Greenways — the private, face-lock video platform — on Render.com as a single web service.
+This guide walks you through deploying Greenways — the private, face-lock video platform — on Render.com as a single web service backed by MongoDB Atlas.
 
 ---
 
@@ -8,12 +8,14 @@ This guide walks you through deploying Greenways — the private, face-lock vide
 
 The deployment bundles both the React frontend (Vite) and the Express API into **one Render web service**. The Express server handles all `/api/*` routes and serves the built frontend for everything else.
 
+**Database:** MongoDB Atlas (free tier available)
+
 ---
 
 ## Prerequisites
 
 - A [Render.com](https://render.com) account (free tier works)
-- A [PostgreSQL database](#step-2-create-a-postgresql-database) (Render provides one)
+- A [MongoDB Atlas](https://cloud.mongodb.com) account (free M0 cluster)
 - Your code pushed to a GitHub or GitLab repository
 - Optionally: a Discord webhook URL for face-scan notifications
 
@@ -21,7 +23,7 @@ The deployment bundles both the React frontend (Vite) and the Express API into *
 
 ## Step 1 — Push to GitHub
 
-Make sure your project is in a GitHub (or GitLab) repository. If it isn't already:
+Make sure your project is in a GitHub (or GitLab) repository:
 
 ```bash
 git init
@@ -32,23 +34,42 @@ gh repo create greenways --private --push
 
 ---
 
-## Step 2 — Create a PostgreSQL Database
+## Step 2 — Create a MongoDB Atlas Database
 
-1. In the Render dashboard, click **New → PostgreSQL**
-2. Give it a name like `greenways-db`
-3. Choose the **Free** plan
-4. Click **Create Database**
-5. After it provisions, copy the **Internal Database URL** — you'll need it in Step 4
+1. Go to [cloud.mongodb.com](https://cloud.mongodb.com) and sign up / log in
+2. Click **Create** → choose **M0 Free** tier
+3. Choose a cloud provider & region (pick one close to your Render region)
+4. Name your cluster (e.g. `greenways`)
+5. Click **Create Deployment**
+
+### Get your connection string
+
+1. In Atlas, click **Connect** on your cluster
+2. Choose **Drivers** → Node.js
+3. Copy the connection string — it looks like:
+   ```
+   mongodb+srv://<username>:<password>@greenways.abc12.mongodb.net/?retryWrites=true&w=majority
+   ```
+4. Replace `<username>` and `<password>` with your Atlas credentials
+5. Add your database name before the `?`:
+   ```
+   mongodb+srv://user:pass@greenways.abc12.mongodb.net/greenways?retryWrites=true&w=majority
+   ```
+
+### Allow connections from Render
+
+In Atlas → **Network Access** → **Add IP Address** → enter `0.0.0.0/0` (allow all).  
+This is required because Render uses dynamic IPs.
 
 ---
 
-## Step 3 — Create the Web Service
+## Step 3 — Create the Web Service on Render
 
 ### Option A — Using the `render.yaml` Blueprint (recommended)
 
 1. In the Render dashboard, click **New → Blueprint**
 2. Connect your GitHub repo
-3. Render will detect `render.yaml` at the repo root and configure the service automatically
+3. Render detects `render.yaml` and pre-fills all settings
 4. Continue to Step 4 to fill in environment variables
 
 ### Option B — Manual Setup
@@ -74,37 +95,21 @@ In your web service's **Environment** tab, add these variables:
 | Key | Value | Notes |
 |---|---|---|
 | `NODE_ENV` | `production` | Required |
-| `PORT` | `10000` | Render sets this automatically too |
-| `DATABASE_URL` | `<your Internal DB URL>` | From Step 2 |
-| `SITE_PASSWORD` | Your chosen site password | Users enter this to get in |
+| `PORT` | `10000` | Render sets this automatically |
+| `MONGODB_URI` | `mongodb+srv://...` | Your Atlas connection string from Step 2 |
+| `SITE_PASSWORD` | `bhendilan` | Users enter this to access the site |
 | `ADMIN_PASSWORD` | `navtanlol` | Password for the `/admin` panel |
-| `DISCORD_WEBHOOK_URL` | `https://discord.com/api/webhooks/...` | Optional — for face scan notifications |
-
-> **Important:** Use the **Internal Database URL** (not the External URL) when both services are on Render. This is faster and doesn't count against egress.
+| `DISCORD_WEBHOOK_URL` | `https://discord.com/api/webhooks/...` | Optional — face scan notifications |
 
 ---
 
-## Step 5 — Run Database Migrations
+## Step 5 — Deploy
 
-After the first deploy finishes, you need to push the database schema. Open a **Shell** in your Render web service dashboard and run:
+Click **Deploy** (or push a commit). Render builds and deploys automatically.
 
-```bash
-pnpm --filter @workspace/db run push
-```
+MongoDB Atlas creates collections automatically on first use — no migration step needed.
 
-Or run it once locally pointing at your production database:
-
-```bash
-DATABASE_URL="<your External DB URL>" pnpm --filter @workspace/db run push
-```
-
----
-
-## Step 6 — Deploy
-
-Click **Deploy** (or push a new commit — Render auto-deploys on every push to your default branch).
-
-Your site will be live at: `https://greenways.onrender.com` (or whatever name you chose)
+Your site will be live at: `https://greenways.onrender.com`
 
 ---
 
@@ -115,65 +120,65 @@ Browser
   │
   ▼
 Render Web Service (greenways)
-  ├── GET  /api/*        → Express routes (auth, videos, admin)
-  ├── GET  /api/uploads/* → Uploaded video files (served as static)
-  └── GET  /*            → React SPA (index.html + assets)
+  ├── GET  /api/*          → Express routes (auth, videos, admin)
+  ├── GET  /api/uploads/*  → Uploaded video files (static)
+  └── GET  /*              → React SPA (index.html + assets)
+         │
+         ▼
+    MongoDB Atlas
+    ├── approvals collection  (face scan requests)
+    └── videos collection     (uploaded video metadata)
 ```
-
-All routes go through a single Express server. The Vite-built frontend is embedded inside the server's `public/` folder at build time.
 
 ---
 
 ## Accessing the Admin Panel
 
-Go to `https://your-app.onrender.com/admin` and enter the admin password (`navtanlol`).
+Go to `https://your-app.onrender.com/admin` and enter: **`navtanlol`**
 
 From there you can:
-- See all pending face scan requests with photos
-- Approve users (they immediately get access)
-- Deny users
+- See all access requests with face photos
+- **Approve** users (they immediately get a session token and access)
+- **Deny** users
 
 ---
 
-## Uploading Videos After Deploy
+## Video Storage on Render
 
-Because Render's free tier uses **ephemeral disk**, uploaded videos will be lost on redeploy. To persist uploads, you have two options:
+Render's free tier uses **ephemeral disk** — uploaded videos are lost on redeploy.
 
-### Option A — Render Disk (Paid)
-Add a Render Disk to your service in the dashboard:
-- Mount path: `/opt/render/project/src/artifacts/api-server/uploads`
-- Size: 1 GB or more
+### Option A — Render Disk (Paid, simplest)
+Add a Render Disk in the dashboard:
+- **Mount Path:** `/opt/render/project/src/artifacts/api-server/uploads`
+- **Size:** 1 GB+
 
-### Option B — S3 / Cloudflare R2 (Recommended for production)
-Replace the local `multer` disk storage with an S3-compatible bucket. The code change is isolated to `artifacts/api-server/src/routes/videos.ts` — swap `multer.diskStorage` for `multer-s3`.
+### Option B — Cloudflare R2 / AWS S3 (Recommended for production)
+Swap `multer` disk storage for `multer-s3`. The change is isolated to `artifacts/api-server/src/routes/videos.ts`.
 
 ---
 
 ## Redeploying After Code Changes
 
-Push to your connected branch — Render automatically rebuilds and redeploys. Zero downtime deploys are enabled by default on paid plans.
+Push to your connected branch — Render auto-rebuilds and redeploys.
 
 ---
 
-## Local Development (for reference)
+## Local Development
 
 ```bash
-# Install deps
+# Install dependencies
 pnpm install
 
-# Push DB schema
-pnpm --filter @workspace/db run push
-
-# Start API server (port 5000 by default via workflow)
+# Start API server
 pnpm --filter @workspace/api-server run dev
 
-# Start frontend (port auto-assigned via workflow)
+# Start frontend (separate terminal)
 pnpm --filter @workspace/greenways run dev
 ```
 
-Required local env vars (create a `.env` file in `artifacts/api-server/` or set in your shell):
-```
-DATABASE_URL=postgresql://...
+Create `artifacts/api-server/.env` (or export in your shell):
+```env
+MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/greenways
 SITE_PASSWORD=bhendilan
 ADMIN_PASSWORD=navtanlol
 DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/...

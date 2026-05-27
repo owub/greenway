@@ -1,7 +1,6 @@
 import { Router, type IRouter } from "express";
 import { randomUUID } from "crypto";
-import { eq } from "drizzle-orm";
-import { db, approvalsTable } from "@workspace/db";
+import { ApprovalModel } from "@workspace/db";
 import {
   VerifyPasswordBody,
   GetAuthStatusParams,
@@ -32,7 +31,7 @@ router.post("/auth/face-scan", async (req, res): Promise<void> => {
   const sessionId = randomUUID();
   const { imageData } = parsed.data;
 
-  await db.insert(approvalsTable).values({
+  await ApprovalModel.create({
     sessionId,
     faceImageData: imageData,
     status: "pending",
@@ -43,12 +42,10 @@ router.post("/auth/face-scan", async (req, res): Promise<void> => {
     try {
       const base64Data = imageData.replace(/^data:image\/\w+;base64,/, "");
       const buffer = Buffer.from(base64Data, "base64");
-
       const boundary = "----GreenWaysBoundary";
       const messageJson = JSON.stringify({
         content: `**Greenways Access Request**\nSession: \`${sessionId}\`\nApprove or deny at: ${req.protocol}://${req.get("host")}/admin`,
       });
-
       const body = Buffer.concat([
         Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="payload_json"\r\n\r\n`),
         Buffer.from(messageJson),
@@ -56,12 +53,9 @@ router.post("/auth/face-scan", async (req, res): Promise<void> => {
         buffer,
         Buffer.from(`\r\n--${boundary}--\r\n`),
       ]);
-
       await fetch(webhookUrl, {
         method: "POST",
-        headers: {
-          "Content-Type": `multipart/form-data; boundary=${boundary}`,
-        },
+        headers: { "Content-Type": `multipart/form-data; boundary=${boundary}` },
         body,
       });
     } catch (err) {
@@ -79,11 +73,7 @@ router.get("/auth/status/:sessionId", async (req, res): Promise<void> => {
     return;
   }
 
-  const [approval] = await db
-    .select()
-    .from(approvalsTable)
-    .where(eq(approvalsTable.sessionId, params.data.sessionId));
-
+  const approval = await ApprovalModel.findOne({ sessionId: params.data.sessionId });
   if (!approval) {
     res.status(404).json({ error: "Session not found" });
     return;

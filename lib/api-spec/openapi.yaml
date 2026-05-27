@@ -142,7 +142,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         "200":
           description: Video details
@@ -161,7 +161,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         "204":
           description: Deleted
@@ -310,7 +310,7 @@ components:
       required: [id, title, filename, createdAt]
       properties:
         id:
-          type: integer
+          type: string
         title:
           type: string
         description:
@@ -352,7 +352,7 @@ components:
       required: [id, sessionId, status, createdAt]
       properties:
         id:
-          type: integer
+          type: string
         sessionId:
           type: string
         faceImageData:

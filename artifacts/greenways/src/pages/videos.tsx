@@ -17,7 +17,7 @@ export function VideosPage() {
   const { data: stats } = useGetVideoStats();
   const deleteVideo = useDeleteVideo();
 
-  const handleDelete = (id: number) => {
+  const handleDelete = (id: string) => {
     if (!confirm("Delete this video?")) return;
     deleteVideo.mutate(
       { id },
@@ -84,7 +84,6 @@ export function VideosPage() {
           </div>
         )}
 
-        {/* Divider */}
         <div className="gold-line mb-8 animate-fade-in delay-200" />
 
         {/* Grid */}
@@ -104,10 +103,7 @@ export function VideosPage() {
                 data-testid={`card-video-${video.id}`}
               >
                 <Link href={`/video/${video.id}`} className="block relative aspect-video bg-muted overflow-hidden">
-                  {/* Gradient overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent z-10" />
-
-                  {/* Play button */}
                   <div className="absolute inset-0 flex items-center justify-center z-20">
                     <div
                       className="w-14 h-14 rounded-full border border-primary/40 flex items-center justify-center group-hover:border-primary/70 group-hover:shadow-[0_0_30px_hsl(45_40%_60%/0.3)] transition-all duration-400"
@@ -116,8 +112,6 @@ export function VideosPage() {
                       <Play className="w-5 h-5 text-primary ml-1" fill="currentColor" />
                     </div>
                   </div>
-
-                  {/* File label */}
                   <div className="absolute bottom-2 left-3 right-3 z-20">
                     <span className="text-[10px] text-foreground/40 font-mono">
                       {video.filename.slice(-16)}

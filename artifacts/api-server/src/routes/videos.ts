@@ -2,12 +2,7 @@ import { Router, type IRouter } from "express";
 import path from "path";
 import fs from "fs";
 import multer from "multer";
-import { eq, desc, gte } from "drizzle-orm";
-import { db, videosTable, approvalsTable } from "@workspace/db";
-import {
-  GetVideoParams,
-  DeleteVideoParams,
-} from "@workspace/api-zod";
+import { ApprovalModel, VideoModel } from "@workspace/db";
 
 const uploadsDir = path.join(import.meta.dirname, "..", "..", "uploads");
 if (!fs.existsSync(uploadsDir)) {
@@ -26,11 +21,8 @@ const upload = multer({
   storage,
   limits: { fileSize: 500 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
-    if (file.mimetype.startsWith("video/")) {
-      cb(null, true);
-    } else {
-      cb(new Error("Only video files are allowed"));
-    }
+    if (file.mimetype.startsWith("video/")) cb(null, true);
+    else cb(new Error("Only video files are allowed"));
   },
 });
 
@@ -39,21 +31,26 @@ const router: IRouter = Router();
 async function isAuthorized(sessionToken: string | undefined, authHeader: string | undefined): Promise<boolean> {
   const token = sessionToken || authHeader?.replace(/^Bearer\s+/i, "");
   if (!token) return false;
-  const [approval] = await db
-    .select()
-    .from(approvalsTable)
-    .where(eq(approvalsTable.sessionToken, token));
+  const approval = await ApprovalModel.findOne({ sessionToken: token });
   return !!approval && approval.status === "approved";
 }
 
+function serializeVideo(video: InstanceType<typeof VideoModel>, baseUrl: string) {
+  return {
+    id: video.id as string,
+    title: video.title,
+    description: video.description ?? null,
+    filename: video.filename,
+    fileUrl: `${baseUrl}/api/uploads/${video.filename}`,
+    createdAt: (video.createdAt as Date).toISOString(),
+  };
+}
+
 router.get("/videos/stats", async (_req, res): Promise<void> => {
-  const allVideos = await db.select().from(videosTable);
-  const totalVideos = allVideos.length;
+  const totalVideos = await VideoModel.countDocuments();
   const oneWeekAgo = new Date();
   oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-  const recentUploads = allVideos.filter(
-    (v) => new Date(v.createdAt) >= oneWeekAgo
-  ).length;
+  const recentUploads = await VideoModel.countDocuments({ createdAt: { $gte: oneWeekAgo } });
   res.json({ totalVideos, recentUploads });
 });
 
@@ -65,17 +62,9 @@ router.get("/videos", async (req, res): Promise<void> => {
     return;
   }
 
-  const videos = await db.select().from(videosTable).orderBy(desc(videosTable.createdAt));
+  const videos = await VideoModel.find().sort({ createdAt: -1 });
   const baseUrl = `${req.protocol}://${req.get("host")}`;
-
-  res.json(
-    videos.map((v) => ({
-      ...v,
-      description: v.description ?? null,
-      fileUrl: `${baseUrl}/api/uploads/${v.filename}`,
-      createdAt: v.createdAt.toISOString(),
-    }))
-  );
+  res.json(videos.map((v) => serializeVideo(v, baseUrl)));
 });
 
 router.post("/videos/upload", upload.single("file"), async (req, res): Promise<void> => {
@@ -99,31 +88,17 @@ router.post("/videos/upload", upload.single("file"), async (req, res): Promise<v
     return;
   }
 
-  const [video] = await db
-    .insert(videosTable)
-    .values({
-      title: title.trim(),
-      description: description?.trim() || null,
-      filename: req.file.filename,
-    })
-    .returning();
+  const video = await VideoModel.create({
+    title: title.trim(),
+    description: description?.trim() || null,
+    filename: req.file.filename,
+  });
 
   const baseUrl = `${req.protocol}://${req.get("host")}`;
-  res.status(201).json({
-    ...video,
-    description: video.description ?? null,
-    fileUrl: `${baseUrl}/api/uploads/${video.filename}`,
-    createdAt: video.createdAt.toISOString(),
-  });
+  res.status(201).json(serializeVideo(video, baseUrl));
 });
 
 router.get("/videos/:id", async (req, res): Promise<void> => {
-  const params = GetVideoParams.safeParse(req.params);
-  if (!params.success) {
-    res.status(400).json({ error: params.error.message });
-    return;
-  }
-
   const sessionToken = req.query.sessionToken as string | undefined;
   const authorized = await isAuthorized(sessionToken, req.headers.authorization);
   if (!authorized) {
@@ -131,42 +106,25 @@ router.get("/videos/:id", async (req, res): Promise<void> => {
     return;
   }
 
-  const [video] = await db.select().from(videosTable).where(eq(videosTable.id, params.data.id));
+  const video = await VideoModel.findById(req.params.id).catch(() => null);
   if (!video) {
     res.status(404).json({ error: "Video not found" });
     return;
   }
 
   const baseUrl = `${req.protocol}://${req.get("host")}`;
-  res.json({
-    ...video,
-    description: video.description ?? null,
-    fileUrl: `${baseUrl}/api/uploads/${video.filename}`,
-    createdAt: video.createdAt.toISOString(),
-  });
+  res.json(serializeVideo(video, baseUrl));
 });
 
 router.delete("/videos/:id", async (req, res): Promise<void> => {
-  const params = DeleteVideoParams.safeParse(req.params);
-  if (!params.success) {
-    res.status(400).json({ error: params.error.message });
-    return;
-  }
-
-  const [video] = await db
-    .delete(videosTable)
-    .where(eq(videosTable.id, params.data.id))
-    .returning();
-
+  const video = await VideoModel.findByIdAndDelete(req.params.id).catch(() => null);
   if (!video) {
     res.status(404).json({ error: "Video not found" });
     return;
   }
 
   const filePath = path.join(uploadsDir, video.filename);
-  if (fs.existsSync(filePath)) {
-    fs.unlinkSync(filePath);
-  }
+  if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
 
   res.sendStatus(204);
 });

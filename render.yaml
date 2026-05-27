@@ -16,9 +16,8 @@ services:
       - key: NODE_ENV
         value: production
       - key: PORT
-        generateValue: false
-        value: 10000
-      - key: DATABASE_URL
+        value: "10000"
+      - key: MONGODB_URI
         sync: false
       - key: SITE_PASSWORD
         sync: false

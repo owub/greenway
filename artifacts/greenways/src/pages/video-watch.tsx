@@ -6,23 +6,21 @@ import { ChevronLeft } from "lucide-react";
 export function WatchVideoPage() {
   const [, setLocation] = useLocation();
   const { id } = useParams<{ id: string }>();
-  const videoId = parseInt(id || "0", 10);
   const sessionToken = localStorage.getItem("sessionToken");
 
   useEffect(() => {
     if (!sessionToken) setLocation("/");
   }, [sessionToken, setLocation]);
 
-  const { data: video, isLoading, isError } = useGetVideo(videoId, {
+  const { data: video, isLoading, isError } = useGetVideo(id ?? "", {
     query: {
-      enabled: !!sessionToken && !!videoId,
-      queryKey: getGetVideoQueryKey(videoId),
+      enabled: !!sessionToken && !!id,
+      queryKey: getGetVideoQueryKey(id ?? ""),
     },
   });
 
   return (
     <div className="grain min-h-screen bg-background">
-      {/* Header */}
       <header className="border-b border-border/60 px-6 py-4 flex items-center gap-4 animate-fade-in backdrop-blur-sm sticky top-0 z-40 bg-background/90">
         <Link
           href="/videos"
@@ -58,7 +56,6 @@ export function WatchVideoPage() {
 
         {video && (
           <>
-            {/* Player */}
             <div
               className="aspect-video bg-black overflow-hidden animate-fade-in-up"
               style={{ boxShadow: "0 20px 80px hsl(160 60% 3% / 0.9), 0 0 0 1px hsl(160 30% 12%)" }}
@@ -72,7 +69,6 @@ export function WatchVideoPage() {
               />
             </div>
 
-            {/* Info */}
             <div className="space-y-4 pb-8 animate-fade-in-up delay-200">
               <h2
                 className="text-3xl font-serif text-foreground"

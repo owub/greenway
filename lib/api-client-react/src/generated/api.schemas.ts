@@ -49,7 +49,7 @@ export interface VideoInput {
 }
 
 export interface Video {
-  id: number;
+  id: string;
   title: string;
   /** @nullable */
   description?: string | null;
@@ -83,7 +83,7 @@ export const ApprovalStatus = {
 } as const;
 
 export interface Approval {
-  id: number;
+  id: string;
   sessionId: string;
   /** @nullable */
   faceImageData?: string | null;
