@@ -1,22 +1,27 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Greenways API specification
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Authentication operations
+  - name: videos
+    description: Video operations
+  - name: admin
+    description: Admin operations
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,13 +29,336 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /auth/verify-password:
+    post:
+      operationId: verifyPassword
+      tags: [auth]
+      summary: Verify site password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PasswordInput"
+      responses:
+        "200":
+          description: Password verification result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PasswordResult"
+
+  /auth/face-scan:
+    post:
+      operationId: submitFaceScan
+      tags: [auth]
+      summary: Submit face scan for approval
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FaceScanInput"
+      responses:
+        "201":
+          description: Face scan submitted, pending approval
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FaceScanResult"
+
+  /auth/status/{sessionId}:
+    get:
+      operationId: getAuthStatus
+      tags: [auth]
+      summary: Get auth approval status
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Auth status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthStatus"
+
+  /videos:
+    get:
+      operationId: listVideos
+      tags: [videos]
+      summary: List all videos
+      responses:
+        "200":
+          description: List of videos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Video"
+    post:
+      operationId: uploadVideo
+      tags: [videos]
+      summary: Upload a new video (multipart handled by client)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VideoInput"
+      responses:
+        "201":
+          description: Video uploaded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Video"
+
+  /videos/stats:
+    get:
+      operationId: getVideoStats
+      tags: [videos]
+      summary: Get video statistics
+      responses:
+        "200":
+          description: Video statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VideoStats"
+
+  /videos/{id}:
+    get:
+      operationId: getVideo
+      tags: [videos]
+      summary: Get a single video
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Video details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Video"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteVideo
+      tags: [videos]
+      summary: Delete a video
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /admin/login:
+    post:
+      operationId: adminLogin
+      tags: [admin]
+      summary: Admin login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminLoginInput"
+      responses:
+        "200":
+          description: Admin login result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminLoginResult"
+
+  /admin/pending:
+    get:
+      operationId: listPendingApprovals
+      tags: [admin]
+      summary: List pending face scan approvals
+      parameters:
+        - name: adminToken
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of pending approvals
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Approval"
+
+  /admin/approvals/{sessionId}/approve:
+    post:
+      operationId: approveUser
+      tags: [admin]
+      summary: Approve a user face scan
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Approval updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Approval"
+
+  /admin/approvals/{sessionId}/deny:
+    post:
+      operationId: denyUser
+      tags: [admin]
+      summary: Deny a user face scan
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Denial recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Approval"
+
 components:
   schemas:
     HealthStatus:
       type: object
+      required: [status]
       properties:
         status:
           type: string
-      required:
-        - status
 
+    PasswordInput:
+      type: object
+      required: [password]
+      properties:
+        password:
+          type: string
+
+    PasswordResult:
+      type: object
+      required: [valid]
+      properties:
+        valid:
+          type: boolean
+
+    FaceScanInput:
+      type: object
+      required: [imageData]
+      properties:
+        imageData:
+          type: string
+          description: Base64-encoded face image
+
+    FaceScanResult:
+      type: object
+      required: [sessionId]
+      properties:
+        sessionId:
+          type: string
+
+    AuthStatus:
+      type: object
+      required: [status, sessionId]
+      properties:
+        sessionId:
+          type: string
+        status:
+          type: string
+          enum: [pending, approved, denied]
+        sessionToken:
+          type: ["string", "null"]
+
+    VideoInput:
+      type: object
+      required: [title, sessionToken]
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        sessionToken:
+          type: string
+
+    Video:
+      type: object
+      required: [id, title, filename, createdAt]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        filename:
+          type: string
+        fileUrl:
+          type: string
+        createdAt:
+          type: string
+
+    VideoStats:
+      type: object
+      required: [totalVideos, recentUploads]
+      properties:
+        totalVideos:
+          type: integer
+        recentUploads:
+          type: integer
+
+    AdminLoginInput:
+      type: object
+      required: [password]
+      properties:
+        password:
+          type: string
+
+    AdminLoginResult:
+      type: object
+      required: [valid]
+      properties:
+        valid:
+          type: boolean
+        adminToken:
+          type: ["string", "null"]
+
+    Approval:
+      type: object
+      required: [id, sessionId, status, createdAt]
+      properties:
+        id:
+          type: integer
+        sessionId:
+          type: string
+        faceImageData:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [pending, approved, denied]
+        createdAt:
+          type: string
