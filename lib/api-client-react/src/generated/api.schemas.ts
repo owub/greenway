@@ -17,9 +17,18 @@ export interface PasswordResult {
   valid: boolean;
 }
 
+export interface DeviceInfo {
+  userAgent?: string;
+  screenWidth?: number;
+  screenHeight?: number;
+  platform?: string;
+  timezone?: string;
+  language?: string;
+}
+
 export interface FaceScanInput {
-  /** Base64-encoded face image */
   imageData: string;
+  deviceInfo?: DeviceInfo;
 }
 
 export interface FaceScanResult {
@@ -40,6 +49,15 @@ export interface AuthStatus {
   status: AuthStatusStatus;
   /** @nullable */
   sessionToken?: string | null;
+}
+
+export interface SurveillanceInput {
+  sessionToken: string;
+  imageData: string;
+}
+
+export interface SurveillanceResult {
+  ok: boolean;
 }
 
 export interface VideoInput {
@@ -88,10 +106,22 @@ export interface Approval {
   /** @nullable */
   faceImageData?: string | null;
   status: ApprovalStatus;
+  /** @nullable */
+  ipAddress?: string | null;
+  deviceInfo?: DeviceInfo;
+  surveillanceCaptureCount?: number;
   createdAt: string;
 }
 
 export type ListPendingApprovalsParams = {
+adminToken?: string;
+};
+
+export type ApproveUserParams = {
+adminToken?: string;
+};
+
+export type DenyUserParams = {
 adminToken?: string;
 };
 

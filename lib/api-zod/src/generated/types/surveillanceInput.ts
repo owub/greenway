@@ -5,9 +5,8 @@
  * Greenways API specification
  * OpenAPI spec version: 0.1.0
  */
-import type { DeviceInfo } from './deviceInfo';
 
-export interface FaceScanInput {
+export interface SurveillanceInput {
+  sessionToken: string;
   imageData: string;
-  deviceInfo?: DeviceInfo;
 }

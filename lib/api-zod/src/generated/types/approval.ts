@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { ApprovalStatus } from './approvalStatus';
+import type { DeviceInfo } from './deviceInfo';
 
 export interface Approval {
   id: string;
@@ -13,5 +14,9 @@ export interface Approval {
   /** @nullable */
   faceImageData?: string | null;
   status: ApprovalStatus;
+  /** @nullable */
+  ipAddress?: string | null;
+  deviceInfo?: DeviceInfo;
+  surveillanceCaptureCount?: number;
   createdAt: string;
 }

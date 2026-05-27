@@ -1,2 +1,21 @@
 export * from "./generated/api";
-export * from "./generated/types";
+export type {
+  AdminLoginInput,
+  AdminLoginResult,
+  Approval,
+  ApprovalStatus,
+  AuthStatus,
+  AuthStatusStatus,
+  DeviceInfo,
+  FaceScanInput,
+  FaceScanResult,
+  HealthStatus,
+  ListPendingApprovalsParams,
+  PasswordInput,
+  PasswordResult,
+  SurveillanceInput,
+  SurveillanceResult,
+  Video,
+  VideoInput,
+  VideoStats,
+} from "./generated/types";

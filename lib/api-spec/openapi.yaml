@@ -8,13 +8,9 @@ servers:
     description: Base API path
 tags:
   - name: health
-    description: Health operations
   - name: auth
-    description: Authentication operations
   - name: videos
-    description: Video operations
   - name: admin
-    description: Admin operations
 
 paths:
   /healthz:
@@ -34,7 +30,6 @@ paths:
     post:
       operationId: verifyPassword
       tags: [auth]
-      summary: Verify site password
       requestBody:
         required: true
         content:
@@ -53,7 +48,6 @@ paths:
     post:
       operationId: submitFaceScan
       tags: [auth]
-      summary: Submit face scan for approval
       requestBody:
         required: true
         content:
@@ -62,7 +56,7 @@ paths:
               $ref: "#/components/schemas/FaceScanInput"
       responses:
         "201":
-          description: Face scan submitted, pending approval
+          description: Face scan submitted
           content:
             application/json:
               schema:
@@ -72,7 +66,6 @@ paths:
     get:
       operationId: getAuthStatus
       tags: [auth]
-      summary: Get auth approval status
       parameters:
         - name: sessionId
           in: path
@@ -87,11 +80,28 @@ paths:
               schema:
                 $ref: "#/components/schemas/AuthStatus"
 
+  /auth/surveillance:
+    post:
+      operationId: submitSurveillance
+      tags: [auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SurveillanceInput"
+      responses:
+        "200":
+          description: Capture stored
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SurveillanceResult"
+
   /videos:
     get:
       operationId: listVideos
       tags: [videos]
-      summary: List all videos
       responses:
         "200":
           description: List of videos
@@ -104,7 +114,6 @@ paths:
     post:
       operationId: uploadVideo
       tags: [videos]
-      summary: Upload a new video (multipart handled by client)
       requestBody:
         required: true
         content:
@@ -123,7 +132,6 @@ paths:
     get:
       operationId: getVideoStats
       tags: [videos]
-      summary: Get video statistics
       responses:
         "200":
           description: Video statistics
@@ -136,7 +144,6 @@ paths:
     get:
       operationId: getVideo
       tags: [videos]
-      summary: Get a single video
       parameters:
         - name: id
           in: path
@@ -155,7 +162,6 @@ paths:
     delete:
       operationId: deleteVideo
       tags: [videos]
-      summary: Delete a video
       parameters:
         - name: id
           in: path
@@ -170,7 +176,6 @@ paths:
     post:
       operationId: adminLogin
       tags: [admin]
-      summary: Admin login
       requestBody:
         required: true
         content:
@@ -189,7 +194,6 @@ paths:
     get:
       operationId: listPendingApprovals
       tags: [admin]
-      summary: List pending face scan approvals
       parameters:
         - name: adminToken
           in: query
@@ -198,7 +202,7 @@ paths:
             type: string
       responses:
         "200":
-          description: List of pending approvals
+          description: List of approvals
           content:
             application/json:
               schema:
@@ -210,11 +214,15 @@ paths:
     post:
       operationId: approveUser
       tags: [admin]
-      summary: Approve a user face scan
       parameters:
         - name: sessionId
           in: path
           required: true
+          schema:
+            type: string
+        - name: adminToken
+          in: query
+          required: false
           schema:
             type: string
       responses:
@@ -229,11 +237,15 @@ paths:
     post:
       operationId: denyUser
       tags: [admin]
-      summary: Deny a user face scan
       parameters:
         - name: sessionId
           in: path
           required: true
+          schema:
+            type: string
+        - name: adminToken
+          in: query
+          required: false
           schema:
             type: string
       responses:
@@ -267,13 +279,30 @@ components:
         valid:
           type: boolean
 
+    DeviceInfo:
+      type: object
+      properties:
+        userAgent:
+          type: string
+        screenWidth:
+          type: integer
+        screenHeight:
+          type: integer
+        platform:
+          type: string
+        timezone:
+          type: string
+        language:
+          type: string
+
     FaceScanInput:
       type: object
       required: [imageData]
       properties:
         imageData:
           type: string
-          description: Base64-encoded face image
+        deviceInfo:
+          $ref: "#/components/schemas/DeviceInfo"
 
     FaceScanResult:
       type: object
@@ -293,6 +322,22 @@ components:
           enum: [pending, approved, denied]
         sessionToken:
           type: ["string", "null"]
+
+    SurveillanceInput:
+      type: object
+      required: [sessionToken, imageData]
+      properties:
+        sessionToken:
+          type: string
+        imageData:
+          type: string
+
+    SurveillanceResult:
+      type: object
+      required: [ok]
+      properties:
+        ok:
+          type: boolean
 
     VideoInput:
       type: object
@@ -360,5 +405,11 @@ components:
         status:
           type: string
           enum: [pending, approved, denied]
+        ipAddress:
+          type: ["string", "null"]
+        deviceInfo:
+          $ref: "#/components/schemas/DeviceInfo"
+        surveillanceCaptureCount:
+          type: integer
         createdAt:
           type: string

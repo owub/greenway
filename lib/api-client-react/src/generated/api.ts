@@ -23,13 +23,17 @@ import type {
   AdminLoginInput,
   AdminLoginResult,
   Approval,
+  ApproveUserParams,
   AuthStatus,
+  DenyUserParams,
   FaceScanInput,
   FaceScanResult,
   HealthStatus,
   ListPendingApprovalsParams,
   PasswordInput,
   PasswordResult,
+  SurveillanceInput,
+  SurveillanceResult,
   Video,
   VideoInput,
   VideoStats
@@ -132,9 +136,6 @@ export const getVerifyPasswordUrl = () => {
   return `/api/auth/verify-password`
 }
 
-/**
- * @summary Verify site password
- */
 export const verifyPassword = async (passwordInput: PasswordInput, options?: RequestInit): Promise<PasswordResult> => {
 
   return customFetch<PasswordResult>(getVerifyPasswordUrl(),
@@ -181,10 +182,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type VerifyPasswordMutationBody = BodyType<PasswordInput>
     export type VerifyPasswordMutationError = ErrorType<unknown>
 
-    /**
- * @summary Verify site password
- */
-export const useVerifyPassword = <TError = ErrorType<unknown>,
+    export const useVerifyPassword = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof verifyPassword>>, TError,{data: BodyType<PasswordInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof verifyPassword>>,
@@ -203,9 +201,6 @@ export const getSubmitFaceScanUrl = () => {
   return `/api/auth/face-scan`
 }
 
-/**
- * @summary Submit face scan for approval
- */
 export const submitFaceScan = async (faceScanInput: FaceScanInput, options?: RequestInit): Promise<FaceScanResult> => {
 
   return customFetch<FaceScanResult>(getSubmitFaceScanUrl(),
@@ -252,10 +247,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type SubmitFaceScanMutationBody = BodyType<FaceScanInput>
     export type SubmitFaceScanMutationError = ErrorType<unknown>
 
-    /**
- * @summary Submit face scan for approval
- */
-export const useSubmitFaceScan = <TError = ErrorType<unknown>,
+    export const useSubmitFaceScan = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitFaceScan>>, TError,{data: BodyType<FaceScanInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof submitFaceScan>>,
@@ -274,9 +266,6 @@ export const getGetAuthStatusUrl = (sessionId: string,) => {
   return `/api/auth/status/${sessionId}`
 }
 
-/**
- * @summary Get auth approval status
- */
 export const getAuthStatus = async (sessionId: string, options?: RequestInit): Promise<AuthStatus> => {
 
   return customFetch<AuthStatus>(getGetAuthStatusUrl(sessionId),
@@ -321,9 +310,6 @@ export type GetAuthStatusQueryResult = NonNullable<Awaited<ReturnType<typeof get
 export type GetAuthStatusQueryError = ErrorType<unknown>
 
 
-/**
- * @summary Get auth approval status
- */
 
 export function useGetAuthStatus<TData = Awaited<ReturnType<typeof getAuthStatus>>, TError = ErrorType<unknown>>(
  sessionId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAuthStatus>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
@@ -343,6 +329,71 @@ export function useGetAuthStatus<TData = Awaited<ReturnType<typeof getAuthStatus
 
 
 
+export const getSubmitSurveillanceUrl = () => {
+
+
+
+
+  return `/api/auth/surveillance`
+}
+
+export const submitSurveillance = async (surveillanceInput: SurveillanceInput, options?: RequestInit): Promise<SurveillanceResult> => {
+
+  return customFetch<SurveillanceResult>(getSubmitSurveillanceUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      surveillanceInput,)
+  }
+);}
+
+
+
+
+export const getSubmitSurveillanceMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitSurveillance>>, TError,{data: BodyType<SurveillanceInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof submitSurveillance>>, TError,{data: BodyType<SurveillanceInput>}, TContext> => {
+
+const mutationKey = ['submitSurveillance'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof submitSurveillance>>, {data: BodyType<SurveillanceInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  submitSurveillance(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SubmitSurveillanceMutationResult = NonNullable<Awaited<ReturnType<typeof submitSurveillance>>>
+    export type SubmitSurveillanceMutationBody = BodyType<SurveillanceInput>
+    export type SubmitSurveillanceMutationError = ErrorType<unknown>
+
+    export const useSubmitSurveillance = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitSurveillance>>, TError,{data: BodyType<SurveillanceInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof submitSurveillance>>,
+        TError,
+        {data: BodyType<SurveillanceInput>},
+        TContext
+      > => {
+      return useMutation(getSubmitSurveillanceMutationOptions(options));
+    }
+
 export const getListVideosUrl = () => {
 
 
@@ -351,9 +402,6 @@ export const getListVideosUrl = () => {
   return `/api/videos`
 }
 
-/**
- * @summary List all videos
- */
 export const listVideos = async ( options?: RequestInit): Promise<Video[]> => {
 
   return customFetch<Video[]>(getListVideosUrl(),
@@ -398,9 +446,6 @@ export type ListVideosQueryResult = NonNullable<Awaited<ReturnType<typeof listVi
 export type ListVideosQueryError = ErrorType<unknown>
 
 
-/**
- * @summary List all videos
- */
 
 export function useListVideos<TData = Awaited<ReturnType<typeof listVideos>>, TError = ErrorType<unknown>>(
   options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listVideos>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
@@ -428,9 +473,6 @@ export const getUploadVideoUrl = () => {
   return `/api/videos`
 }
 
-/**
- * @summary Upload a new video (multipart handled by client)
- */
 export const uploadVideo = async (videoInput: VideoInput, options?: RequestInit): Promise<Video> => {
 
   return customFetch<Video>(getUploadVideoUrl(),
@@ -477,10 +519,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type UploadVideoMutationBody = BodyType<VideoInput>
     export type UploadVideoMutationError = ErrorType<unknown>
 
-    /**
- * @summary Upload a new video (multipart handled by client)
- */
-export const useUploadVideo = <TError = ErrorType<unknown>,
+    export const useUploadVideo = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof uploadVideo>>, TError,{data: BodyType<VideoInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof uploadVideo>>,
@@ -499,9 +538,6 @@ export const getGetVideoStatsUrl = () => {
   return `/api/videos/stats`
 }
 
-/**
- * @summary Get video statistics
- */
 export const getVideoStats = async ( options?: RequestInit): Promise<VideoStats> => {
 
   return customFetch<VideoStats>(getGetVideoStatsUrl(),
@@ -546,9 +582,6 @@ export type GetVideoStatsQueryResult = NonNullable<Awaited<ReturnType<typeof get
 export type GetVideoStatsQueryError = ErrorType<unknown>
 
 
-/**
- * @summary Get video statistics
- */
 
 export function useGetVideoStats<TData = Awaited<ReturnType<typeof getVideoStats>>, TError = ErrorType<unknown>>(
   options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getVideoStats>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
@@ -576,9 +609,6 @@ export const getGetVideoUrl = (id: string,) => {
   return `/api/videos/${id}`
 }
 
-/**
- * @summary Get a single video
- */
 export const getVideo = async (id: string, options?: RequestInit): Promise<Video> => {
 
   return customFetch<Video>(getGetVideoUrl(id),
@@ -623,9 +653,6 @@ export type GetVideoQueryResult = NonNullable<Awaited<ReturnType<typeof getVideo
 export type GetVideoQueryError = ErrorType<void>
 
 
-/**
- * @summary Get a single video
- */
 
 export function useGetVideo<TData = Awaited<ReturnType<typeof getVideo>>, TError = ErrorType<void>>(
  id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getVideo>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
@@ -653,9 +680,6 @@ export const getDeleteVideoUrl = (id: string,) => {
   return `/api/videos/${id}`
 }
 
-/**
- * @summary Delete a video
- */
 export const deleteVideo = async (id: string, options?: RequestInit): Promise<void> => {
 
   return customFetch<void>(getDeleteVideoUrl(id),
@@ -701,10 +725,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type DeleteVideoMutationError = ErrorType<unknown>
 
-    /**
- * @summary Delete a video
- */
-export const useDeleteVideo = <TError = ErrorType<unknown>,
+    export const useDeleteVideo = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteVideo>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof deleteVideo>>,
@@ -723,9 +744,6 @@ export const getAdminLoginUrl = () => {
   return `/api/admin/login`
 }
 
-/**
- * @summary Admin login
- */
 export const adminLogin = async (adminLoginInput: AdminLoginInput, options?: RequestInit): Promise<AdminLoginResult> => {
 
   return customFetch<AdminLoginResult>(getAdminLoginUrl(),
@@ -772,10 +790,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type AdminLoginMutationBody = BodyType<AdminLoginInput>
     export type AdminLoginMutationError = ErrorType<unknown>
 
-    /**
- * @summary Admin login
- */
-export const useAdminLogin = <TError = ErrorType<unknown>,
+    export const useAdminLogin = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof adminLogin>>, TError,{data: BodyType<AdminLoginInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof adminLogin>>,
@@ -801,9 +816,6 @@ export const getListPendingApprovalsUrl = (params?: ListPendingApprovalsParams,)
   return stringifiedParams.length > 0 ? `/api/admin/pending?${stringifiedParams}` : `/api/admin/pending`
 }
 
-/**
- * @summary List pending face scan approvals
- */
 export const listPendingApprovals = async (params?: ListPendingApprovalsParams, options?: RequestInit): Promise<Approval[]> => {
 
   return customFetch<Approval[]>(getListPendingApprovalsUrl(params),
@@ -848,9 +860,6 @@ export type ListPendingApprovalsQueryResult = NonNullable<Awaited<ReturnType<typ
 export type ListPendingApprovalsQueryError = ErrorType<unknown>
 
 
-/**
- * @summary List pending face scan approvals
- */
 
 export function useListPendingApprovals<TData = Awaited<ReturnType<typeof listPendingApprovals>>, TError = ErrorType<unknown>>(
  params?: ListPendingApprovalsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPendingApprovals>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
@@ -870,20 +879,26 @@ export function useListPendingApprovals<TData = Awaited<ReturnType<typeof listPe
 
 
 
-export const getApproveUserUrl = (sessionId: string,) => {
+export const getApproveUserUrl = (sessionId: string,
+    params?: ApproveUserParams,) => {
+  const normalizedParams = new URLSearchParams();
 
+  Object.entries(params || {}).forEach(([key, value]) => {
 
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
 
+  const stringifiedParams = normalizedParams.toString();
 
-  return `/api/admin/approvals/${sessionId}/approve`
+  return stringifiedParams.length > 0 ? `/api/admin/approvals/${sessionId}/approve?${stringifiedParams}` : `/api/admin/approvals/${sessionId}/approve`
 }
 
-/**
- * @summary Approve a user face scan
- */
-export const approveUser = async (sessionId: string, options?: RequestInit): Promise<Approval> => {
+export const approveUser = async (sessionId: string,
+    params?: ApproveUserParams, options?: RequestInit): Promise<Approval> => {
 
-  return customFetch<Approval>(getApproveUserUrl(sessionId),
+  return customFetch<Approval>(getApproveUserUrl(sessionId,params),
   {
     ...options,
     method: 'POST'
@@ -896,8 +911,8 @@ export const approveUser = async (sessionId: string, options?: RequestInit): Pro
 
 
 export const getApproveUserMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof approveUser>>, TError,{sessionId: string}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof approveUser>>, TError,{sessionId: string}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof approveUser>>, TError,{sessionId: string;params?: ApproveUserParams}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof approveUser>>, TError,{sessionId: string;params?: ApproveUserParams}, TContext> => {
 
 const mutationKey = ['approveUser'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
@@ -909,10 +924,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof approveUser>>, {sessionId: string}> = (props) => {
-          const {sessionId} = props ?? {};
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof approveUser>>, {sessionId: string;params?: ApproveUserParams}> = (props) => {
+          const {sessionId,params} = props ?? {};
 
-          return  approveUser(sessionId,requestOptions)
+          return  approveUser(sessionId,params,requestOptions)
         }
 
 
@@ -926,34 +941,37 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type ApproveUserMutationError = ErrorType<unknown>
 
-    /**
- * @summary Approve a user face scan
- */
-export const useApproveUser = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof approveUser>>, TError,{sessionId: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+    export const useApproveUser = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof approveUser>>, TError,{sessionId: string;params?: ApproveUserParams}, TContext>, request?: SecondParameter<typeof customFetch>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof approveUser>>,
         TError,
-        {sessionId: string},
+        {sessionId: string;params?: ApproveUserParams},
         TContext
       > => {
       return useMutation(getApproveUserMutationOptions(options));
     }
 
-export const getDenyUserUrl = (sessionId: string,) => {
+export const getDenyUserUrl = (sessionId: string,
+    params?: DenyUserParams,) => {
+  const normalizedParams = new URLSearchParams();
 
+  Object.entries(params || {}).forEach(([key, value]) => {
 
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
 
+  const stringifiedParams = normalizedParams.toString();
 
-  return `/api/admin/approvals/${sessionId}/deny`
+  return stringifiedParams.length > 0 ? `/api/admin/approvals/${sessionId}/deny?${stringifiedParams}` : `/api/admin/approvals/${sessionId}/deny`
 }
 
-/**
- * @summary Deny a user face scan
- */
-export const denyUser = async (sessionId: string, options?: RequestInit): Promise<Approval> => {
+export const denyUser = async (sessionId: string,
+    params?: DenyUserParams, options?: RequestInit): Promise<Approval> => {
 
-  return customFetch<Approval>(getDenyUserUrl(sessionId),
+  return customFetch<Approval>(getDenyUserUrl(sessionId,params),
   {
     ...options,
     method: 'POST'
@@ -966,8 +984,8 @@ export const denyUser = async (sessionId: string, options?: RequestInit): Promis
 
 
 export const getDenyUserMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof denyUser>>, TError,{sessionId: string}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof denyUser>>, TError,{sessionId: string}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof denyUser>>, TError,{sessionId: string;params?: DenyUserParams}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof denyUser>>, TError,{sessionId: string;params?: DenyUserParams}, TContext> => {
 
 const mutationKey = ['denyUser'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
@@ -979,10 +997,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof denyUser>>, {sessionId: string}> = (props) => {
-          const {sessionId} = props ?? {};
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof denyUser>>, {sessionId: string;params?: DenyUserParams}> = (props) => {
+          const {sessionId,params} = props ?? {};
 
-          return  denyUser(sessionId,requestOptions)
+          return  denyUser(sessionId,params,requestOptions)
         }
 
 
@@ -996,15 +1014,12 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type DenyUserMutationError = ErrorType<unknown>
 
-    /**
- * @summary Deny a user face scan
- */
-export const useDenyUser = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof denyUser>>, TError,{sessionId: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+    export const useDenyUser = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof denyUser>>, TError,{sessionId: string;params?: DenyUserParams}, TContext>, request?: SecondParameter<typeof customFetch>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof denyUser>>,
         TError,
-        {sessionId: string},
+        {sessionId: string;params?: DenyUserParams},
         TContext
       > => {
       return useMutation(getDenyUserMutationOptions(options));

@@ -16,9 +16,6 @@ export const HealthCheckResponse = zod.object({
 })
 
 
-/**
- * @summary Verify site password
- */
 export const VerifyPasswordBody = zod.object({
   "password": zod.string()
 })
@@ -28,17 +25,19 @@ export const VerifyPasswordResponse = zod.object({
 })
 
 
-/**
- * @summary Submit face scan for approval
- */
 export const SubmitFaceScanBody = zod.object({
-  "imageData": zod.string().describe('Base64-encoded face image')
+  "imageData": zod.string(),
+  "deviceInfo": zod.object({
+  "userAgent": zod.string().optional(),
+  "screenWidth": zod.number().optional(),
+  "screenHeight": zod.number().optional(),
+  "platform": zod.string().optional(),
+  "timezone": zod.string().optional(),
+  "language": zod.string().optional()
+}).optional()
 })
 
 
-/**
- * @summary Get auth approval status
- */
 export const GetAuthStatusParams = zod.object({
   "sessionId": zod.coerce.string()
 })
@@ -50,9 +49,16 @@ export const GetAuthStatusResponse = zod.object({
 })
 
 
-/**
- * @summary List all videos
- */
+export const SubmitSurveillanceBody = zod.object({
+  "sessionToken": zod.string(),
+  "imageData": zod.string()
+})
+
+export const SubmitSurveillanceResponse = zod.object({
+  "ok": zod.boolean()
+})
+
+
 export const ListVideosResponseItem = zod.object({
   "id": zod.string(),
   "title": zod.string(),
@@ -64,9 +70,6 @@ export const ListVideosResponseItem = zod.object({
 export const ListVideosResponse = zod.array(ListVideosResponseItem)
 
 
-/**
- * @summary Upload a new video (multipart handled by client)
- */
 export const UploadVideoBody = zod.object({
   "title": zod.string(),
   "description": zod.string().optional(),
@@ -74,18 +77,12 @@ export const UploadVideoBody = zod.object({
 })
 
 
-/**
- * @summary Get video statistics
- */
 export const GetVideoStatsResponse = zod.object({
   "totalVideos": zod.number(),
   "recentUploads": zod.number()
 })
 
 
-/**
- * @summary Get a single video
- */
 export const GetVideoParams = zod.object({
   "id": zod.coerce.string()
 })
@@ -100,17 +97,11 @@ export const GetVideoResponse = zod.object({
 })
 
 
-/**
- * @summary Delete a video
- */
 export const DeleteVideoParams = zod.object({
   "id": zod.coerce.string()
 })
 
 
-/**
- * @summary Admin login
- */
 export const AdminLoginBody = zod.object({
   "password": zod.string()
 })
@@ -121,9 +112,6 @@ export const AdminLoginResponse = zod.object({
 })
 
 
-/**
- * @summary List pending face scan approvals
- */
 export const ListPendingApprovalsQueryParams = zod.object({
   "adminToken": zod.coerce.string().optional()
 })
@@ -133,16 +121,27 @@ export const ListPendingApprovalsResponseItem = zod.object({
   "sessionId": zod.string(),
   "faceImageData": zod.string().nullish(),
   "status": zod.enum(['pending', 'approved', 'denied']),
+  "ipAddress": zod.string().nullish(),
+  "deviceInfo": zod.object({
+  "userAgent": zod.string().optional(),
+  "screenWidth": zod.number().optional(),
+  "screenHeight": zod.number().optional(),
+  "platform": zod.string().optional(),
+  "timezone": zod.string().optional(),
+  "language": zod.string().optional()
+}).optional(),
+  "surveillanceCaptureCount": zod.number().optional(),
   "createdAt": zod.string()
 })
 export const ListPendingApprovalsResponse = zod.array(ListPendingApprovalsResponseItem)
 
 
-/**
- * @summary Approve a user face scan
- */
 export const ApproveUserParams = zod.object({
   "sessionId": zod.coerce.string()
+})
+
+export const ApproveUserQueryParams = zod.object({
+  "adminToken": zod.coerce.string().optional()
 })
 
 export const ApproveUserResponse = zod.object({
@@ -150,15 +149,26 @@ export const ApproveUserResponse = zod.object({
   "sessionId": zod.string(),
   "faceImageData": zod.string().nullish(),
   "status": zod.enum(['pending', 'approved', 'denied']),
+  "ipAddress": zod.string().nullish(),
+  "deviceInfo": zod.object({
+  "userAgent": zod.string().optional(),
+  "screenWidth": zod.number().optional(),
+  "screenHeight": zod.number().optional(),
+  "platform": zod.string().optional(),
+  "timezone": zod.string().optional(),
+  "language": zod.string().optional()
+}).optional(),
+  "surveillanceCaptureCount": zod.number().optional(),
   "createdAt": zod.string()
 })
 
 
-/**
- * @summary Deny a user face scan
- */
 export const DenyUserParams = zod.object({
   "sessionId": zod.coerce.string()
+})
+
+export const DenyUserQueryParams = zod.object({
+  "adminToken": zod.coerce.string().optional()
 })
 
 export const DenyUserResponse = zod.object({
@@ -166,6 +176,16 @@ export const DenyUserResponse = zod.object({
   "sessionId": zod.string(),
   "faceImageData": zod.string().nullish(),
   "status": zod.enum(['pending', 'approved', 'denied']),
+  "ipAddress": zod.string().nullish(),
+  "deviceInfo": zod.object({
+  "userAgent": zod.string().optional(),
+  "screenWidth": zod.number().optional(),
+  "screenHeight": zod.number().optional(),
+  "platform": zod.string().optional(),
+  "timezone": zod.string().optional(),
+  "language": zod.string().optional()
+}).optional(),
+  "surveillanceCaptureCount": zod.number().optional(),
   "createdAt": zod.string()
 })
 
