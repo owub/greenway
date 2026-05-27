@@ -2,6 +2,7 @@ import express, { type Express } from "express";
 import cors from "cors";
 import pinoHttp from "pino-http";
 import path from "path";
+import fs from "fs";
 import router from "./routes";
 import { logger } from "./lib/logger";
 
@@ -34,5 +35,16 @@ const uploadsDir = path.join(import.meta.dirname, "..", "uploads");
 app.use("/api/uploads", express.static(uploadsDir));
 
 app.use("/api", router);
+
+// In production, serve the built Vite frontend and handle SPA routing
+if (process.env.NODE_ENV === "production") {
+  const frontendDir = path.join(import.meta.dirname, "..", "public");
+  if (fs.existsSync(frontendDir)) {
+    app.use(express.static(frontendDir));
+    app.get("*", (_req, res) => {
+      res.sendFile(path.join(frontendDir, "index.html"));
+    });
+  }
+}
 
 export default app;
