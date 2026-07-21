@@ -6,15 +6,9 @@
  * OpenAPI spec version: 2.0.0
  */
 
-export interface Video {
+export interface ChatMessage {
   id: string;
-  title: string;
-  /** @nullable */
-  description?: string | null;
-  filename: string;
-  contentType: string;
-  /** @minimum 0 */
-  size: number;
-  contentUrl: string;
+  author: string;
+  text: string;
   createdAt: string;
 }

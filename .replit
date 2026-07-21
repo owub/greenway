@@ -32,7 +32,3 @@ localPort = 20199
 externalPort = 3000
 
 [userenv]
-
-[userenv.shared]
-SITE_PASSWORD = "bhendilan"
-ADMIN_PASSWORD = "navtanlol"

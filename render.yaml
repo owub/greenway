@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: greenways
+    name: hate-terminal
     runtime: node
     nodeVersion: 20
     buildCommand: >
@@ -10,7 +10,7 @@ services:
       PORT=3000 BASE_PATH=/ pnpm --filter @workspace/greenways run build &&
       cp -r artifacts/greenways/dist/public artifacts/api-server/public &&
       pnpm --filter @workspace/api-server run build
-    startCommand: node --enable-source-maps artifacts/api-server/dist/index.mjs
+    startCommand: node artifacts/api-server/dist/index.mjs
     healthCheckPath: /api/healthz
     envVars:
       - key: NODE_ENV
@@ -21,7 +21,5 @@ services:
         sync: false
       - key: SITE_PASSWORD
         sync: false
-      - key: ADMIN_PASSWORD
-        sync: false
-      - key: DISCORD_WEBHOOK_URL
+      - key: SESSION_SECRET
         sync: false

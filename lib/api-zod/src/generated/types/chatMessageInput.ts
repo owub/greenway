@@ -6,10 +6,10 @@
  * OpenAPI spec version: 2.0.0
  */
 
-export interface PasswordInput {
+export interface ChatMessageInput {
   /**
      * @minLength 1
-     * @maxLength 256
+     * @maxLength 500
      */
-  password: string;
+  text: string;
 }

@@ -1,22 +1,18 @@
-import { Switch, Route, Router as WouterRouter } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import NotFound from "@/pages/not-found";
-
-// Import pages
+import { Route, Router as WouterRouter, Switch } from "wouter";
+import { HomePage } from "./pages/home";
 import { LoginPage } from "./pages/login";
-import { PendingPage } from "./pages/pending";
-import { VideosPage } from "./pages/videos";
-import { WatchVideoPage } from "./pages/video-watch";
-import { UploadPage } from "./pages/upload";
-import { AdminPage } from "./pages/admin";
+import NotFound from "./pages/not-found";
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: 1,
-      refetchOnWindowFocus: false,
+      retry: (failureCount, error) => {
+        const status = (error as { status?: number } | null)?.status;
+        return status !== 401 && failureCount < 1;
+      },
+      refetchOnWindowFocus: true,
+      staleTime: 2_000,
     },
   },
 });
@@ -25,27 +21,18 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={LoginPage} />
-      <Route path="/pending" component={PendingPage} />
-      <Route path="/videos" component={VideosPage} />
-      <Route path="/video/:id" component={WatchVideoPage} />
-      <Route path="/upload" component={UploadPage} />
-      <Route path="/admin" component={AdminPage} />
+      <Route path="/home" component={HomePage} />
       <Route component={NotFound} />
     </Switch>
   );
 }
 
-function App() {
+export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-          <Router />
-        </WouterRouter>
-        <Toaster />
-      </TooltipProvider>
+      <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+        <Router />
+      </WouterRouter>
     </QueryClientProvider>
   );
 }
-
-export default App;

@@ -1,5 +1,4 @@
 import express, { type Express } from "express";
-import cors from "cors";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import pinoHttp from "pino-http";
@@ -9,17 +8,36 @@ import router from "./routes";
 import { logger } from "./lib/logger";
 
 const app: Express = express();
+const isProduction = process.env.NODE_ENV === "production";
 
 app.set("trust proxy", 1);
+app.disable("x-powered-by");
 
 app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "blob:"],
+      mediaSrc: ["'self'"],
+      connectSrc: ["'self'"],
+      fontSrc: ["'self'", "data:"],
+      objectSrc: ["'none'"],
+      baseUri: ["'none'"],
+      frameAncestors: ["'none'"],
+      formAction: ["'self'"],
+      upgradeInsecureRequests: isProduction ? [] : null,
+    },
+  },
   crossOriginEmbedderPolicy: false,
-  contentSecurityPolicy: false,
+  crossOriginResourcePolicy: { policy: "same-origin" },
+  referrerPolicy: { policy: "no-referrer" },
 }));
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 200,
+  limit: 300,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Too many requests, please try again later." },
@@ -27,14 +45,23 @@ const limiter = rateLimit({
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 30,
+  limit: 10,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Too many auth attempts, please try again later." },
 });
 
+const chatLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Message rate limit reached. Try again shortly." },
+});
+
 app.use(limiter);
-app.use("/api/auth", authLimiter);
+app.use("/api/auth/verify-password", authLimiter);
+app.post("/api/chat/messages", chatLimiter);
 
 app.use(
   pinoHttp({
@@ -46,26 +73,72 @@ app.use(
   }),
 );
 
-app.use(cors({
-  origin: true,
-  credentials: true,
-}));
-app.use(express.json({ limit: "50mb" }));
-app.use(express.urlencoded({ extended: true }));
+app.use((req, res, next) => {
+  res.setHeader("Cache-Control", req.path.startsWith("/api/") ? "no-store" : "no-cache");
 
-const uploadsDir = path.join(import.meta.dirname, "..", "uploads");
-app.use("/api/uploads", express.static(uploadsDir));
+  if (!["POST", "PUT", "PATCH", "DELETE"].includes(req.method)) {
+    next();
+    return;
+  }
+
+  const origin = req.get("origin");
+  if (!origin) {
+    next();
+    return;
+  }
+
+  const expectedOrigin = `${req.protocol}://${req.host}`;
+  const isSameOriginBrowserRequest = req.get("sec-fetch-site") === "same-origin";
+  const allowedOrigins = (process.env.ALLOWED_ORIGINS ?? "")
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean);
+
+  if (
+    origin !== expectedOrigin &&
+    !isSameOriginBrowserRequest &&
+    !allowedOrigins.includes(origin)
+  ) {
+    res.status(403).json({ error: "Cross-origin request rejected" });
+    return;
+  }
+  next();
+});
+
+app.use(express.json({ limit: "32kb" }));
+app.use(express.urlencoded({ extended: false, limit: "32kb" }));
 
 app.use("/api", router);
 
-if (process.env.NODE_ENV === "production") {
+if (isProduction) {
   const frontendDir = path.join(import.meta.dirname, "..", "public");
   if (fs.existsSync(frontendDir)) {
-    app.use(express.static(frontendDir));
+    app.use(express.static(frontendDir, {
+      etag: true,
+      maxAge: "1y",
+      immutable: true,
+      setHeaders(res, filePath) {
+        if (filePath.endsWith("index.html")) {
+          res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        }
+      },
+    }));
     app.get("*", (_req, res) => {
+      res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
       res.sendFile(path.join(frontendDir, "index.html"));
     });
   }
 }
+
+app.use((error: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  logger.error({ err: error }, "Request failed");
+
+  if (error instanceof SyntaxError) {
+    res.status(400).json({ error: "Invalid JSON" });
+    return;
+  }
+
+  res.status(500).json({ error: "Request failed" });
+});
 
 export default app;

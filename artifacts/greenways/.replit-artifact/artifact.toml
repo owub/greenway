@@ -1,6 +1,6 @@
 kind = "web"
 previewPath = "/"
-title = "Greenways"
+title = "HATE Terminal"
 version = "1.0.0"
 id = "artifacts/greenways"
 router = "path"

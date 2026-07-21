@@ -6,10 +6,6 @@
  * OpenAPI spec version: 2.0.0
  */
 
-export interface PasswordInput {
-  /**
-     * @minLength 1
-     * @maxLength 256
-     */
-  password: string;
+export interface ActionResult {
+  ok: boolean;
 }
