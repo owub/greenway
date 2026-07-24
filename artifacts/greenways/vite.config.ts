@@ -1,6 +1,5 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import tailwindcss from "@tailwindcss/vite";
 import path from "path";
 
 const port = Number(process.env.PORT ?? "5173");
@@ -11,14 +10,13 @@ if (Number.isNaN(port) || port <= 0) {
 
 const basePath = process.env.BASE_PATH ?? "/";
 const apiOrigin = process.env.API_ORIGIN ?? "http://127.0.0.1:8080";
-const allowedHosts = process.env.ALLOWED_HOSTS
-  ?.split(",")
+const allowedHosts = process.env.ALLOWED_HOSTS?.split(",")
   .map((host) => host.trim())
   .filter(Boolean);
 
 export default defineConfig({
   base: basePath,
-  plugins: [react(), tailwindcss()],
+  plugins: [react()],
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "src"),

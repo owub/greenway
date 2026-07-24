@@ -1,6 +1,6 @@
 <svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="180" height="180" rx="22" fill="#020503"/>
-  <rect x="16" y="16" width="148" height="148" rx="10" stroke="#173820" stroke-width="4"/>
-  <path d="M52 48H72V80H108V48H128V132H108V98H72V132H52V48Z" fill="#79FF97"/>
-  <rect x="126" y="124" width="16" height="8" fill="#69D7FF"/>
+  <rect width="180" height="180" rx="24" fill="#151614"/>
+  <rect x="14" y="14" width="152" height="152" rx="14" fill="#FFFC00"/>
+  <path d="M48 48H106V64H67V82H101V98H67V116H108V132H48V48Z" fill="#151614"/>
+  <path d="M111 48H132V132H111V48Z" fill="#E65345"/>
 </svg>

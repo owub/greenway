@@ -1,0 +1,114 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - link "Ekampreet video archive" [ref=e5] [cursor=pointer]:
+      - /url: /
+      - generic [ref=e6] [cursor=pointer]:
+        - strong [ref=e7] [cursor=pointer]: Ekampreet
+        - generic [ref=e8] [cursor=pointer]: Visual archive
+    - tablist "Media views" [ref=e9]:
+      - tab "Videos" [selected] [ref=e10] [cursor=pointer]:
+        - img [ref=e11] [cursor=pointer]
+        - text: Videos
+      - tab "Live snaps" [ref=e13] [cursor=pointer]:
+        - img [ref=e14] [cursor=pointer]
+        - text: Live snaps
+    - link "@ekampreet.16" [ref=e18] [cursor=pointer]:
+      - /url: https://www.snapchat.com/add/ekampreet.16
+      - img [ref=e19] [cursor=pointer]
+      - generic [ref=e22] [cursor=pointer]: "@ekampreet.16"
+      - img [ref=e23] [cursor=pointer]
+  - main [ref=e27]:
+    - tabpanel "Videos" [ref=e28]:
+      - generic [ref=e29]:
+        - generic [ref=e30]:
+          - paragraph [ref=e31]: Personal archive
+          - heading "Recent moments" [level=1] [ref=e32]
+        - generic [ref=e33]:
+          - img [ref=e34]
+          - text: 5 clips
+      - generic [ref=e36]:
+        - article [ref=e37]:
+          - generic [ref=e38]:
+            - generic [ref=e39]: Your browser cannot play this video.
+            - generic [ref=e40]: "01"
+          - generic [ref=e41]:
+            - generic [ref=e42]:
+              - paragraph [ref=e43]: Archive clip
+              - heading "Moment 01" [level=2] [ref=e44]
+            - link "@ekampreet.16" [ref=e45] [cursor=pointer]:
+              - /url: https://www.snapchat.com/add/ekampreet.16
+              - img [ref=e46] [cursor=pointer]
+              - generic [ref=e49] [cursor=pointer]: "@ekampreet.16"
+              - img [ref=e50] [cursor=pointer]
+        - article [ref=e54]:
+          - generic [ref=e55]:
+            - generic [ref=e56]: Your browser cannot play this video.
+            - generic [ref=e57]: "02"
+          - generic [ref=e58]:
+            - generic [ref=e59]:
+              - paragraph [ref=e60]: Archive clip
+              - heading "Moment 02" [level=2] [ref=e61]
+            - link "@ekampreet.16" [ref=e62] [cursor=pointer]:
+              - /url: https://www.snapchat.com/add/ekampreet.16
+              - img [ref=e63] [cursor=pointer]
+              - generic [ref=e66] [cursor=pointer]: "@ekampreet.16"
+              - img [ref=e67] [cursor=pointer]
+        - article [ref=e71]:
+          - generic [ref=e72]:
+            - generic [ref=e73]: Your browser cannot play this video.
+            - generic [ref=e74]: "03"
+          - generic [ref=e75]:
+            - generic [ref=e76]:
+              - paragraph [ref=e77]: Archive clip
+              - heading "Moment 03" [level=2] [ref=e78]
+            - link "@ekampreet.16" [ref=e79] [cursor=pointer]:
+              - /url: https://www.snapchat.com/add/ekampreet.16
+              - img [ref=e80] [cursor=pointer]
+              - generic [ref=e83] [cursor=pointer]: "@ekampreet.16"
+              - img [ref=e84] [cursor=pointer]
+        - article [ref=e88]:
+          - generic [ref=e89]:
+            - generic [ref=e90]: Your browser cannot play this video.
+            - generic [ref=e91]: "04"
+          - generic [ref=e92]:
+            - generic [ref=e93]:
+              - paragraph [ref=e94]: Archive clip
+              - heading "Moment 04" [level=2] [ref=e95]
+            - link "@ekampreet.16" [ref=e96] [cursor=pointer]:
+              - /url: https://www.snapchat.com/add/ekampreet.16
+              - img [ref=e97] [cursor=pointer]
+              - generic [ref=e100] [cursor=pointer]: "@ekampreet.16"
+              - img [ref=e101] [cursor=pointer]
+        - article [ref=e105]:
+          - generic [ref=e106]:
+            - generic [ref=e107]: Your browser cannot play this video.
+            - generic [ref=e108]: "05"
+          - generic [ref=e109]:
+            - generic [ref=e110]:
+              - paragraph [ref=e111]: Archive clip
+              - heading "Moment 05" [level=2] [ref=e112]
+            - link "@ekampreet.16" [ref=e113] [cursor=pointer]:
+              - /url: https://www.snapchat.com/add/ekampreet.16
+              - img [ref=e114] [cursor=pointer]
+              - generic [ref=e117] [cursor=pointer]: "@ekampreet.16"
+              - img [ref=e118] [cursor=pointer]
+      - complementary [ref=e122]:
+        - generic [ref=e124]:
+          - paragraph [ref=e125]: More on Snapchat
+          - strong [ref=e126]: "@ekampreet.16"
+        - link "Add on Snapchat" [ref=e127] [cursor=pointer]:
+          - /url: https://www.snapchat.com/add/ekampreet.16
+          - img [ref=e128] [cursor=pointer]
+          - text: Add on Snapchat
+          - img [ref=e131] [cursor=pointer]
+  - contentinfo [ref=e135]:
+    - generic [ref=e136]: Ekampreet archive
+    - link "@ekampreet.16" [ref=e137] [cursor=pointer]:
+      - /url: https://www.snapchat.com/add/ekampreet.16
+      - img [ref=e138] [cursor=pointer]
+      - generic [ref=e141] [cursor=pointer]: "@ekampreet.16"
+      - img [ref=e142] [cursor=pointer]
+```
