@@ -2,16 +2,16 @@ services:
   - type: web
     name: hate-terminal
     runtime: node
-    nodeVersion: 20
     buildCommand: >
-      npm install -g pnpm@10.32.1 &&
-      pnpm install --frozen-lockfile &&
+      pnpm install --frozen-lockfile --prod=false &&
       pnpm run build:render
     startCommand: pnpm start
     healthCheckPath: /api/healthz
     envVars:
       - key: NODE_ENV
         value: production
+      - key: NODE_VERSION
+        value: "24.14.1"
       - key: PORT
         value: "10000"
       - key: LOG_LEVEL

@@ -59,7 +59,7 @@ For a manually configured Render Web Service, use:
 **Build Command**
 
 ```bash
-npm install -g pnpm@10.32.1 && pnpm install --frozen-lockfile && pnpm run build:render
+pnpm install --frozen-lockfile --prod=false && pnpm run build:render
 ```
 
 **Start Command**
