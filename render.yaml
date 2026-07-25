@@ -4,21 +4,26 @@ services:
     runtime: node
     nodeVersion: 20
     buildCommand: >
-      npm install -g pnpm &&
+      npm install -g pnpm@10.32.1 &&
       pnpm install --frozen-lockfile &&
-      pnpm run typecheck &&
-      PORT=3000 BASE_PATH=/ pnpm --filter @workspace/greenways run build &&
-      cp -r artifacts/greenways/dist/public artifacts/api-server/public &&
-      pnpm --filter @workspace/api-server run build
-    startCommand: node artifacts/api-server/dist/index.mjs
+      pnpm run build:render
+    startCommand: pnpm start
     healthCheckPath: /api/healthz
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
         value: "10000"
+      - key: LOG_LEVEL
+        value: info
+      - key: MONGO_URI
+        sync: false
+      - key: MONGO_DB
+        value: greenway
       - key: SNAPCHAT_USERNAME
         value: "ekampreet.16"
+      - key: SNAPCHAT_DISPLAY_NAME
+        sync: false
       - key: SNAPCHAT_PROFILE_ID
         sync: false
       - key: SNAPCHAT_CLIENT_ID

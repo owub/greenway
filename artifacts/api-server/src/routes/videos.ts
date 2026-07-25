@@ -80,7 +80,7 @@ router.post("/:videoId/likes", async (req, res) => {
       { upsert: true, returnDocument: "after" },
     );
 
-    res.json({ count: result.value?.count ?? 0 });
+    res.json({ count: result?.count ?? 0 });
   } catch (error) {
     res.status(500).json({ error: "Could not increment like count" });
   }

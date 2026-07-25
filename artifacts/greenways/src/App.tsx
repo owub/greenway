@@ -8,6 +8,7 @@ import {
   Volume2,
   VolumeX,
   Send,
+  X,
 } from "lucide-react";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { galleryImageUrl, localVideos, type LocalVideo } from "./local-media";
@@ -171,6 +172,9 @@ function VideoPreviewOverlay({
     const element = videoRef.current;
     if (!element) return;
 
+    setProgress(0);
+    setIsPlaying(false);
+
     const handleTimeUpdate = () => {
       if (!element.duration) return;
       setProgress((element.currentTime / element.duration) * 100);
@@ -192,6 +196,23 @@ function VideoPreviewOverlay({
       element.removeEventListener("pause", handlePause);
     };
   }, [video, isMuted, volume]);
+
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    };
+
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [onClose]);
 
   const togglePlay = () => {
     const element = videoRef.current;
@@ -223,8 +244,27 @@ function VideoPreviewOverlay({
     }
   };
 
+  const handleSeek = (value: number) => {
+    const element = videoRef.current;
+    if (
+      !element ||
+      !Number.isFinite(element.duration) ||
+      element.duration <= 0
+    ) {
+      return;
+    }
+
+    element.currentTime = (value / 100) * element.duration;
+    setProgress(value);
+  };
+
   return (
-    <div className="video-preview-overlay" role="dialog" aria-modal="true" aria-label={`Preview ${video.title}`}>
+    <div
+      className="video-preview-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Preview ${video.title}`}
+    >
       <div className="overlay-backdrop" onClick={onClose} />
       <div className="overlay-card">
         <button
@@ -233,52 +273,78 @@ function VideoPreviewOverlay({
           onClick={onClose}
           aria-label="Close preview"
         >
-          ×
+          <X aria-hidden="true" />
         </button>
 
-        <div className="overlay-media">
-          <video
-            ref={videoRef}
-            src={video.url}
-            playsInline
-            preload="metadata"
-            muted={isMuted}
-          >
-            Your browser cannot play this video.
-          </video>
-        </div>
+        <div className="overlay-player">
+          <div className="overlay-media">
+            <video
+              ref={videoRef}
+              src={video.url}
+              playsInline
+              preload="metadata"
+              muted={isMuted}
+              onClick={togglePlay}
+            >
+              Your browser cannot play this video.
+            </video>
+          </div>
 
-        <div className="custom-player-controls">
-          <button
-            type="button"
-            className="player-button"
-            onClick={togglePlay}
-            aria-label={isPlaying ? "Pause video" : "Play video"}
-          >
-            {isPlaying ? <Pause aria-hidden="true" /> : <Play aria-hidden="true" />}
-          </button>
-          <button
-            type="button"
-            className="player-button"
-            onClick={toggleMute}
-            aria-label={isMuted ? "Unmute" : "Mute"}
-          >
-            {isMuted ? <VolumeX aria-hidden="true" /> : <Volume2 aria-hidden="true" />}
-          </button>
-          <div className="player-volume">
-            <label htmlFor="volume-slider">Volume</label>
+          <div className="custom-player-controls" aria-label="Video controls">
             <input
-              id="volume-slider"
+              className="player-progress"
               type="range"
               min={0}
-              max={1}
-              step={0.05}
-              value={volume}
-              onChange={(event) => handleVolumeChange(Number(event.target.value))}
+              max={100}
+              step={0.1}
+              value={progress}
+              onChange={(event) => handleSeek(Number(event.target.value))}
+              aria-label="Seek video"
+              title="Seek video"
             />
-          </div>
-          <div className="player-progress" aria-hidden="true">
-            <div className="player-progress-bar" style={{ width: `${progress}%` }} />
+            <div className="player-controls">
+              <button
+                type="button"
+                className="player-button"
+                onClick={togglePlay}
+                aria-label={isPlaying ? "Pause video" : "Play video"}
+                title={isPlaying ? "Pause video" : "Play video"}
+              >
+                {isPlaying ? (
+                  <Pause aria-hidden="true" />
+                ) : (
+                  <Play aria-hidden="true" />
+                )}
+              </button>
+              <button
+                type="button"
+                className="player-button"
+                onClick={toggleMute}
+                aria-label={isMuted ? "Unmute" : "Mute"}
+                title={isMuted ? "Unmute" : "Mute"}
+              >
+                {isMuted ? (
+                  <VolumeX aria-hidden="true" />
+                ) : (
+                  <Volume2 aria-hidden="true" />
+                )}
+              </button>
+              <div className="player-volume">
+                <input
+                  id="volume-slider"
+                  type="range"
+                  min={0}
+                  max={1}
+                  step={0.05}
+                  value={volume}
+                  onChange={(event) =>
+                    handleVolumeChange(Number(event.target.value))
+                  }
+                  aria-label="Volume"
+                  title="Volume"
+                />
+              </div>
+            </div>
           </div>
         </div>
 
@@ -341,7 +407,9 @@ function VideoCard({
           Your browser cannot play this video.
         </video>
         <div className="home-video-overlay">
-          <span className="home-video-play">▶</span>
+          <span className="home-video-play">
+            <Play aria-hidden="true" />
+          </span>
         </div>
         <span className="video-index" aria-hidden="true">
           {String(index + 1).padStart(2, "0")}
@@ -447,7 +515,12 @@ function AgeGateModal({
   visitorCount: number;
 }) {
   return (
-    <div className="age-gate-overlay" role="dialog" aria-modal="true" aria-label="Age restricted content warning">
+    <div
+      className="age-gate-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Age restricted content warning"
+    >
       <div className="age-gate-backdrop" />
       <div className="age-gate-card">
         <div className="age-gate-header">
@@ -462,7 +535,9 @@ function AgeGateModal({
           {visitorCount.toLocaleString()} users have visited this page.
         </p>
         {denied ? (
-          <p className="age-gate-denied">Access denied. You cannot view this site without agreeing.</p>
+          <p className="age-gate-denied">
+            Access denied. You cannot view this site without agreeing.
+          </p>
         ) : null}
         <div className="age-gate-actions">
           <button type="button" className="button-secondary" onClick={onDeny}>
@@ -480,9 +555,10 @@ function AgeGateModal({
 export default function App() {
   const [activeTab, setActiveTab] = useState<ActiveTab>("videos");
   const [selectedVideo, setSelectedVideo] = useState<LocalVideo | null>(null);
-  const [hasAgeConsent, setHasAgeConsent] = useState<boolean>(() =>
-    typeof window !== "undefined" &&
-    window.localStorage.getItem("greenway-age-consent") === "true",
+  const [hasAgeConsent, setHasAgeConsent] = useState<boolean>(
+    () =>
+      typeof window !== "undefined" &&
+      window.localStorage.getItem("greenway-age-consent") === "true",
   );
   const [visitorCount, setVisitorCount] = useState<number>(() =>
     typeof window !== "undefined"
@@ -493,7 +569,8 @@ export default function App() {
 
   useEffect(() => {
     if (typeof window === "undefined" || hasAgeConsent) return;
-    const count = Number(window.localStorage.getItem("greenway-visitor-count") ?? "0") + 1;
+    const count =
+      Number(window.localStorage.getItem("greenway-visitor-count") ?? "0") + 1;
     window.localStorage.setItem("greenway-visitor-count", String(count));
     setVisitorCount(count);
   }, [hasAgeConsent]);

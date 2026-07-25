@@ -356,6 +356,12 @@ video:focus-visible {
   font-weight: 800;
 }
 
+.home-video-play svg {
+  width: 26px;
+  height: 26px;
+  fill: currentColor;
+}
+
 .video-preview-button {
   position: absolute;
   inset: auto 12px 12px;
@@ -701,10 +707,22 @@ video:focus-visible {
   overflow: auto;
 }
 
+.overlay-player {
+  display: grid;
+  grid-template-rows: auto auto;
+  min-width: 0;
+  align-content: start;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: #000;
+}
+
 .overlay-close {
   position: absolute;
   top: 16px;
   right: 16px;
+  z-index: 2;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -718,11 +736,17 @@ video:focus-visible {
   line-height: 1;
 }
 
+.overlay-close svg {
+  width: 20px;
+  height: 20px;
+}
+
 .overlay-media {
+  position: relative;
   width: 100%;
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 9 / 16;
+  max-height: calc(100dvh - 200px);
   overflow: hidden;
-  border-radius: 18px;
   background: #000;
 }
 
@@ -731,68 +755,61 @@ video:focus-visible {
   height: 100%;
   object-fit: contain;
   background: #000;
+  cursor: pointer;
 }
 
 .custom-player-controls {
   display: grid;
-  gap: 14px;
-  padding: 20px;
-  border-radius: 22px;
-  background: rgba(18, 18, 18, 0.94);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.25);
+  gap: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 10px 12px 12px;
+  background: #121212;
 }
 
 .player-controls {
   display: flex;
-  flex-wrap: wrap;
+  min-width: 0;
   align-items: center;
-  gap: 14px;
+  gap: 8px;
 }
 
 .player-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
-  border-radius: 18px;
+  width: 42px;
+  height: 42px;
+  flex: none;
+  border-radius: 6px;
   border: 1px solid rgba(255, 255, 255, 0.16);
   background: rgba(255, 255, 255, 0.06);
   color: #fff;
-  font-size: 18px;
+}
+
+.player-button svg {
+  width: 19px;
+  height: 19px;
 }
 
 .player-volume {
-  display: grid;
-  gap: 6px;
-  min-width: 130px;
-  color: #fff;
-  font-size: 12px;
-}
-
-.player-volume label {
-  display: block;
-  color: #fff;
-  opacity: 0.88;
+  display: flex;
+  min-width: 72px;
+  flex: 1;
+  align-items: center;
+  padding-left: 4px;
 }
 
 .player-volume input {
   width: 100%;
+  accent-color: var(--red);
 }
 
 .player-progress {
   width: 100%;
-  height: 8px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.18);
-  overflow: hidden;
-}
-
-.player-progress-bar {
-  height: 100%;
-  border-radius: 999px;
-  background: var(--red);
+  height: 18px;
+  margin: 0;
+  accent-color: var(--red);
+  cursor: pointer;
 }
 
 .overlay-details {
@@ -813,16 +830,25 @@ video:focus-visible {
 
 @media (min-width: 900px) {
   .overlay-card {
-    grid-template-columns: 1.4fr 1fr;
-    max-height: min(100%, 720px);
+    grid-template-columns: minmax(320px, 0.9fr) minmax(280px, 1.1fr);
+    align-items: start;
+    max-height: calc(100dvh - 48px);
+    overflow: hidden;
   }
 
-  .overlay-media {
-    aspect-ratio: 16 / 9;
+  .overlay-details {
+    max-height: calc(100dvh - 88px);
+    padding-right: 4px;
+    overflow-y: auto;
   }
 }
 
 @media (max-width: 720px) {
+  .video-preview-overlay {
+    place-items: start stretch;
+    padding: 0;
+  }
+
   .video-preview-button {
     inset: auto 10px 10px;
     padding: 0 10px;
@@ -831,14 +857,24 @@ video:focus-visible {
 
   .overlay-card {
     width: 100%;
-    max-height: 100%;
-    padding: 16px;
-    gap: 18px;
+    max-height: 100dvh;
+    gap: 16px;
+    border: 0;
+    border-radius: 0;
+    padding: 8px;
   }
 
   .overlay-close {
     top: 12px;
     right: 12px;
+  }
+
+  .overlay-media {
+    max-height: calc(100dvh - 94px);
+  }
+
+  .custom-player-controls {
+    padding: 8px 10px 10px;
   }
 }
 
@@ -855,7 +891,13 @@ video:focus-visible {
 .age-gate-backdrop {
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.08), transparent 42%), rgba(0, 0, 0, 0.9);
+  background:
+    radial-gradient(
+      circle at center,
+      rgba(255, 255, 255, 0.08),
+      transparent 42%
+    ),
+    rgba(0, 0, 0, 0.9);
 }
 
 .age-gate-card {
@@ -865,7 +907,11 @@ video:focus-visible {
   padding: 28px;
   border-radius: 24px;
   border: 1px solid rgba(255, 255, 255, 0.12);
-  background: linear-gradient(180deg, rgba(18, 18, 18, 0.98), rgba(8, 8, 8, 0.98));
+  background: linear-gradient(
+    180deg,
+    rgba(18, 18, 18, 0.98),
+    rgba(8, 8, 8, 0.98)
+  );
   box-shadow: 0 32px 120px rgba(0, 0, 0, 0.55);
 }
 

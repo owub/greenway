@@ -4,9 +4,15 @@
   "license": "MIT",
   "scripts": {
     "preinstall": "sh -c 'rm -f package-lock.json yarn.lock; case \"$npm_config_user_agent\" in pnpm/*) ;; *) echo \"Use pnpm instead\" >&2; exit 1 ;; esac'",
+    "dev:api": "set -a; . ./.env; set +a; pnpm --filter @workspace/api-server run dev",
+    "dev:web": "set -a; . ./.env; set +a; PORT=5173 pnpm --filter @workspace/greenways run dev",
     "build": "pnpm run typecheck && pnpm -r --if-present run build",
+    "build:render": "pnpm run typecheck && PORT=3000 BASE_PATH=/ pnpm --filter @workspace/greenways run build && mkdir -p artifacts/api-server/public && cp -r artifacts/greenways/dist/public/. artifacts/api-server/public/ && NODE_ENV=production pnpm --filter @workspace/api-server run build",
+    "start": "pnpm --filter @workspace/api-server run start",
+    "start:local": "set -a; . ./.env; set +a; pnpm start",
     "typecheck": "pnpm -r --if-present run typecheck"
   },
+  "packageManager": "pnpm@10.32.1",
   "private": true,
   "devDependencies": {
     "prettier": "^3.8.3",
